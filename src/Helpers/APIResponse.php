@@ -20,11 +20,12 @@ class APIResponse
         );
     }
 
-    public static function returnSuccess( int $code = 200, string|array $message = "" ): JsonResponse
+    public static function returnSuccess( int $code = 200, string $message = "", $data = [] ): JsonResponse
     {
         return new JsonResponse(
             data: [
                 "message" => $message,
+                "data" => $data
             ],
             status: $code
         );

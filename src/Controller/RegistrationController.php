@@ -26,7 +26,7 @@ class RegistrationController extends AbstractController
     }
 
 
-    #[Route( "/registration", name: "registration", methods: ["POST" ] )]
+    #[Route( "/api/registration", name: "registration", methods: ["POST" ] )]
     public function index( Request $request): JsonResponse
     {
 
