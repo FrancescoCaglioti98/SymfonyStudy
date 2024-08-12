@@ -21,8 +21,7 @@ class PostController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly PostRepository $postRepository,
-        private readonly Validation $validation,
-        private readonly Security $security
+        private readonly Validation $validation
     )
     {
     }
@@ -64,7 +63,7 @@ class PostController extends AbstractController
 
         $post->setTitle( $request->request->get('title') );
         $post->setContent( $request->request->get('content') );
-        $post->setUser( $this->security->getUser() );
+        $post->setUser( $this->getUser() );
         $post->setCreationDate( new \DateTime() );
         $post->setModifiedDate( new \DateTime() );
 

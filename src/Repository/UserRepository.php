@@ -8,13 +8,14 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @extends ServiceEntityRepository<User>
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, private readonly SerializerInterface $serializer)
     {
         parent::__construct($registry, User::class);
     }
@@ -31,6 +32,21 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
+    }
+
+    public function normalizeUser( User $user )
+    {
+        return [
+            'id' => $user->getId(),
+            'username' => $user->getUsername(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles(),
+            "telephone" => $user->getUserInfo()->getTelephone(),
+            "bio" => $user->getUserInfo()->getBio(),
+            "profileImgPath" => $user->getUserInfo()->getProfileImgPath(),
+            "birthdate" => $user->getUserInfo()->getBirthdate(),
+            "registrationDate" => $user->getUserInfo()->getRegistrationDate(),
+        ];
     }
 
     //    /**
