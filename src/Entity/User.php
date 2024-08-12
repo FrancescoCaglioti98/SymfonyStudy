@@ -9,6 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -20,17 +22,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups("user_info")]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
     #[Assert\NotBlank(message: "The username field must be present")]
     #[Assert\Length(min: 5, max: 180, minMessage: 'The length {{ value_length }} exceeds the minimum length of 5.', maxMessage: 'The length {{ value_length }} exceed the maximum length of 180. ')]
+    #[Groups("user_info")]
     private ?string $username = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups("user_info")]
     private array $roles = [];
 
     /**
@@ -38,17 +43,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     #[Assert\NotBlank(message: "The field password must be present")]
+    #[Groups("user_info")]
     private ?string $password = null;
 
     #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank(message: "The email field must be present")]
     #[Assert\Email(message: "The email field must be valid email address")]
+    #[Groups("user_info")]
     private ?string $email = null;
 
     /**
      * @var Collection<int, Post>
      */
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'userID', orphanRemoval: true)]
+    #[Groups("user_info")]
+    #[SerializedName('posts')]
     private Collection $posts;
 
     public function __construct()
@@ -155,7 +164,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->posts->contains($post)) {
             $this->posts->add($post);
-            $post->setUserID($this);
+            $post->setUser($this);
         }
 
         return $this;
@@ -165,8 +174,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->posts->removeElement($post)) {
             // set the owning side to null (unless already changed)
-            if ($post->getUserID() === $this) {
-                $post->setUserID(null);
+            if ($post->getUser() === $this) {
+                $post->setUser(null);
             }
         }
 

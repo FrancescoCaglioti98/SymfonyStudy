@@ -4,15 +4,13 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Helpers\APIResponse;
+use App\Helpers\Validation;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RegistrationController extends AbstractController
 {
@@ -20,7 +18,7 @@ class RegistrationController extends AbstractController
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly EntityManagerInterface $entityManager,
-        private readonly ValidatorInterface $validator,
+        private readonly Validation $validation
     )
     {
     }
@@ -47,23 +45,16 @@ class RegistrationController extends AbstractController
         $hashedPassword = $this->passwordHasher->hashPassword( $user, $plainTextPassword );
         $user->setPassword( $hashedPassword );
 
-        $errors = $this->validator->validate($user);
-        if( count($errors) > 0 ) {
-
-            $plainErrors = [];
-            foreach ( $errors as $error ) {
-                $plainErrors[] = $error->getMessage();
-            }
-
-            return APIResponse::returnError( message: $plainErrors );
+        $errors = $this->validation->validate( $user );
+        if( !empty( $errors ) ) {
+            return APIResponse::returnError( message: $errors );
         }
 
         $this->entityManager->persist( $user );
         $this->entityManager->flush();
 
-        return new JsonResponse(
-            data: [],
-            status: 201
+        return APIResponse::returnSuccess(
+            code: 201
         );
     }
 

@@ -5,6 +5,10 @@ namespace App\Entity;
 use App\Repository\PostRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+
+use Symfony\Component\Serializer\Attribute\Groups;
+
+use Symfony\Component\Serializer\Attribute\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
@@ -13,33 +17,42 @@ class Post
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups( "post_details" )]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "The field title is mandatory")]
     #[Assert\Length(min: 3, max: 255, minMessage: 'The length {{ value_length }} is too short', maxMessage: 'The length {{ value_length }} is too long')]
+    #[Groups( "post_details" )]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "The field content is mandatory")]
+    #[Groups( "post_details" )]
     private ?string $content = null;
 
     #[ORM\Column]
+    #[Groups( "post_details" )]
     private ?bool $isDraft = false;
 
     #[ORM\Column]
+    #[Groups( "post_details" )]
     private ?bool $isArchived = false;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups( "post_details" )]
     private ?\DateTimeInterface $creationDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups( "post_details" )]
     private ?\DateTimeInterface $modifiedDate = null;
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotBlank(message: "The field userID is mandatory")]
-    private ?User $userID = null;
+    #[Groups( "post_details" )]
+    #[SerializedName( "author" )]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -51,7 +64,7 @@ class Post
         return $this->title;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(?string $title): static
     {
         $this->title = $title;
 
@@ -63,7 +76,7 @@ class Post
         return $this->content;
     }
 
-    public function setContent(string $content): static
+    public function setContent(?string $content): static
     {
         $this->content = $content;
 
@@ -118,14 +131,14 @@ class Post
         return $this;
     }
 
-    public function getUserID(): ?User
+    public function getUser(): ?User
     {
-        return $this->userID;
+        return $this->user;
     }
 
-    public function setUserID(?User $userID): static
+    public function setUser(?User $user): static
     {
-        $this->userID = $userID;
+        $this->user = $user;
 
         return $this;
     }
